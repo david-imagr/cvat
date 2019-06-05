@@ -53,7 +53,8 @@ def process_cvat_xml(xml_file, image_dir, output_dir):
     :return:
     """
     KNOWN_TAGS = {'box', 'image', 'attribute'}
-    os.makedirs(output_dir, exist_ok=True)
+    if os.path.exists(output_dir) is False:
+        os.makedirs(output_dir)
     cvat_xml = etree.parse(xml_file)
 
     basename = os.path.splitext( os.path.basename( xml_file ) )[0]
@@ -116,7 +117,7 @@ def process_cvat_xml(xml_file, image_dir, output_dir):
 
             anno_name = os.path.basename(os.path.splitext(image_name)[0] + '.xml')
             anno_dir = os.path.dirname(os.path.join(output_dir, image_name))
-            os.makedirs(anno_dir, exist_ok=True)
+            os.makedirs(anno_dir)
             writer.save(os.path.join(anno_dir, anno_name))
 
     else:
@@ -145,7 +146,8 @@ def process_cvat_xml(xml_file, image_dir, output_dir):
 
             anno_name = os.path.basename(os.path.splitext(image_name)[0] + '.xml')
             anno_dir = os.path.dirname(os.path.join(output_dir, image_name))
-            os.makedirs(anno_dir, exist_ok=True)
+            if os.path.exists(anno_dir) is False:
+                os.makedirs(anno_dir)
             writer.save(os.path.join(anno_dir, anno_name))
 
 
