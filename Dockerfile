@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM nvcr.io/nvidia/tensorflow:19.02-py3
 
 ARG http_proxy
 ARG https_proxy
@@ -70,12 +70,13 @@ RUN if [ "$CUDA_SUPPORT" = "yes" ]; then \
 
 # Tensorflow annotation support
 ARG TF_ANNOTATION
+
+COPY models /tmp/models
 ENV TF_ANNOTATION=${TF_ANNOTATION}
 ENV TF_ANNOTATION_MODEL_PATH=${HOME}/rcnn/inference_graph
 RUN if [ "$TF_ANNOTATION" = "yes" ]; then \
         bash -i /tmp/components/tf_annotation/install.sh; \
     fi
-
 ARG WITH_TESTS
 RUN if [ "$WITH_TESTS" = "yes" ]; then \
         wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
@@ -102,7 +103,7 @@ RUN if [ "$WITH_TESTS" = "yes" ]; then \
 # Install and initialize CVAT, copy all necessary files
 COPY cvat/requirements/ /tmp/requirements/
 COPY supervisord.conf mod_wsgi.conf wait-for-it.sh manage.py ${HOME}/
-RUN  pip3 install --no-cache-dir -r /tmp/requirements/${DJANGO_CONFIGURATION}.txt
+RUN  python3 -m pip install --no-cache-dir -r /tmp/requirements/${DJANGO_CONFIGURATION}.txt
 
 # Install git application dependencies
 RUN apt-get update && \

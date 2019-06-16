@@ -136,6 +136,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
                 scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                slogger.glob.info("score {}".format(scores))
+
                 classes = detection_graph.get_tensor_by_name('detection_classes:0')
                 num_detections = detection_graph.get_tensor_by_name('num_detections:0')
                 (boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, num_detections], feed_dict={image_tensor: image_np_expanded})
@@ -294,6 +296,12 @@ def create(request, tid):
             "book": 84, "clock": 85, "vase": 86, "scissors": 87, "teddy_bear": 88, "hair_drier": 89,
             "toothbrush": 90
             }
+        tf_annotation_labels = {
+                "a":1,
+                "b":2,
+                "c":3,
+                "d":4,
+                }
 
         labels_mapping = {}
         for key, labels in db_labels.items():

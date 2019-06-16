@@ -56,6 +56,9 @@ services:
       - cvat_keys:/home/django/keys
       - cvat_logs:/home/django/logs
       - cvat_models:/home/django/models
+      - type: bind
+        source: /home/david
+        target: /home/david
 
 volumes:
   cvat_db:
