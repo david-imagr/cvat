@@ -97,6 +97,30 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
         xmax = int(box[3] * w)
         ymax = int(box[2] * h)
         return xmin, ymin, xmax, ymax
+    import cv2
+    def _convert_mask_to_polygon(img, mask, box):
+        """mask_resized = cv2.resize(mask, (bb_width, bb_height))xmin, ymin, xmax, ymax ="""
+        mask_temp = np.zeros((img.shape[0], img.shape[1]))
+        bb_width = box[2]-box[0]
+        bb_height = box[3]-box[1]
+        mask_resized = cv2.resize(mask, (bb_width, bb_height))
+        mask_resized = cv2.blur(mask_resized,(15,15))
+        mask_resized[mask_resized>0.97] = 1
+
+        mask_temp[ymin:ymax, xmin:xmax] = mask_resized
+        #cv2.normalize(mask_temp,mask_temp,0,255,cv2.NORM_MINMAX)
+        slogger.glob.info("Mask shape : {}".format(mask_temp.shape))
+
+        contour = cv2.findContours(mask_temp.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)[0]
+        contours = max(contour, key=lambda arr: arr.size)
+        contours = np.squeeze(contours)
+
+
+        slogger.glob.info("Contours : {}".format(contours))
+        return contours
+
+
+
 
     result = {}
     model_path = os.environ.get('TF_ANNOTATION_MODEL_PATH')
@@ -127,6 +151,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 job.save_meta()
 
                 image = Image.open(image_path)
+                image_original_np = load_image_into_numpy(image)
                 width, height = image.size
                 if width > 1920 or height > 1080:
                     image = image.resize((width // 2, height // 2), Image.ANTIALIAS)
@@ -136,20 +161,33 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
                 scores = detection_graph.get_tensor_by_name('detection_scores:0')
-                slogger.glob.info("score {}".format(scores))
 
                 classes = detection_graph.get_tensor_by_name('detection_classes:0')
                 num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                (boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, num_detections], feed_dict={image_tensor: image_np_expanded})
+                masks = detection_graph.get_tensor_by_name('detection_masks:0')
+                (boxes, scores, classes, masks, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
+
+                slogger.glob.info("score {}".format(scores))
 
                 for i in range(len(classes[0])):
                     if classes[0][i] in labels_mapping.keys():
                         if scores[0][i] >= treshold:
                             xmin, ymin, xmax, ymax = _normalize_box(boxes[0][i], width, height)
+                            contours = _convert_mask_to_polygon(image_original_np, masks[0][i], [xmin,ymin,xmax,ymax])
                             label = labels_mapping[classes[0][i]]
                             if label not in result:
                                 result[label] = []
-                            result[label].append([image_num, xmin, ymin, xmax, ymax])
+                            contour_string = ""
+
+                            for point in contours:
+                                contour_string += "{},{} ".format(int(point[0]), int(point[1]))
+
+                            array_output = [image_num, contour_string]
+
+                            slogger.glob.info("Output array : {}".format(array_output))
+
+                            #result[label].append([image_num, xmin, ymin, xmax, ymax])
+                            result[label].append(array_output)
         finally:
             sess.close()
             del sess
@@ -190,20 +228,32 @@ def convert_to_cvat_format(data):
 
     for label in data:
         boxes = data[label]
+        #for box in boxes:
+        #    result['create']['boxes'].append({
+        #        "label_id": label,
+        #        "frame": box[0],
+        #        "xtl": box[1],
+        #        "ytl": box[2],
+        #        "xbr": box[3],
+        #        "ybr": box[4],
+        #        "z_order": 0,
+        #        "group_id": 0,
+        #        "occluded": False,
+        #        "attributes": [],
+        #        "id": -1,
+        #    })
         for box in boxes:
-            result['create']['boxes'].append({
+            result['create']['polygons'].append({
                 "label_id": label,
                 "frame": box[0],
-                "xtl": box[1],
-                "ytl": box[2],
-                "xbr": box[3],
-                "ybr": box[4],
+                "points": box[1],
                 "z_order": 0,
                 "group_id": 0,
                 "occluded": False,
                 "attributes": [],
                 "id": -1,
             })
+
 
     return result
 

@@ -606,8 +606,12 @@ class _AnnotationForJob(_Annotation):
     def _clamp_poly(self, points, im_size):
         verified = []
         points = points.split(' ')
+
         for p in points:
             p = p.split(',')
+            if len(p) < 2: continue
+
+            slogger.glob.info('Point : {}'.format(p))
             verified.append('{},{}'.format(
                 self._clamp(float(p[0]), 0, im_size['width']),
                 self._clamp(float(p[1]), 0, im_size['height'])

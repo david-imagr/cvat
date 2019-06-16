@@ -32,7 +32,7 @@ services:
   cvat:
     container_name: cvat
     image: cvat
-    restart: always
+    #restart: always
     depends_on:
       - cvat_redis
       - cvat_db
