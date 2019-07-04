@@ -9,8 +9,11 @@ set -e
 cd ${HOME} && \
 #wget -O model.tar.gz http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28.tar.gz && \
 #tar -xzf model.tar.gz && rm model.tar.gz && \
-imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_33x33_4_groups_PMS'
+#imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_33x33_4_groups_PMS'
 
+# This is for class agnostic platform
+#imagr_model='/tmp/models/mask_rcnn_platform_resnet50_atrous_PMS_first_stage_max_proposal_100'
+imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_class_agnostic'
 mv ${imagr_model} ${HOME}/rcnn && cd ${HOME} && \
 mv rcnn/frozen_inference_graph.pb rcnn/inference_graph.pb
 

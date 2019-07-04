@@ -24,7 +24,7 @@ import numpy as np
 
 from PIL import Image
 from cvat.apps.engine.log import slogger
-
+import random
 
 def load_image_into_numpy(image):
     (im_width, im_height) = image.size
@@ -105,7 +105,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
         bb_height = box[3]-box[1]
         mask_resized = cv2.resize(mask, (bb_width, bb_height))
         mask_resized = cv2.blur(mask_resized,(15,15))
-        mask_resized[mask_resized>0.97] = 1
+        mask_resized[mask_resized>0.65] = 1
 
         mask_temp[ymin:ymax, xmin:xmax] = mask_resized
         #cv2.normalize(mask_temp,mask_temp,0,255,cv2.NORM_MINMAX)
@@ -153,8 +153,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 image = Image.open(image_path)
                 image_original_np = load_image_into_numpy(image)
                 width, height = image.size
-                if width > 1920 or height > 1080:
-                    image = image.resize((width // 2, height // 2), Image.ANTIALIAS)
+                #if width > 1920 or height > 1080:
+                image = image.resize((width // 2, height // 2), Image.ANTIALIAS)
                 image_np = load_image_into_numpy(image)
                 image_np_expanded = np.expand_dims(image_np, axis=0)
 
@@ -179,7 +179,11 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                                 result[label] = []
                             contour_string = ""
 
-                            for point in contours:
+                            contour_clean = [contours[_c] for _c in range(0, len(contours), int(len(contours)/20))]
+                            print(contour_clean)
+
+                            for point in contour_clean:
+
                                 contour_string += "{},{} ".format(int(point[0]), int(point[1]))
 
                             array_output = [image_num, contour_string]
@@ -259,7 +263,7 @@ def convert_to_cvat_format(data):
 
 def create_thread(tid, labels_mapping):
     try:
-        TRESHOLD = 0.5
+        TRESHOLD = 0.85
         # Init rq job
         job = rq.get_current_job()
         job.meta['progress'] = 0
@@ -347,11 +351,14 @@ def create(request, tid):
             "toothbrush": 90
             }
         tf_annotation_labels = {
-                "a":1,
-                "b":2,
-                "c":3,
-                "d":4,
+                "spice":1,
+                "bottle":2,
+                "can":3,
+                "gum":4,
                 }
+        tf_annotation_labels = {"object":1}
+
+
 
         labels_mapping = {}
         for key, labels in db_labels.items():
