@@ -169,6 +169,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
 
                 slogger.glob.info("score {}".format(scores))
 
+                n_points = 40
+
                 for i in range(len(classes[0])):
                     if classes[0][i] in labels_mapping.keys():
                         if scores[0][i] >= treshold:
@@ -178,8 +180,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                             if label not in result:
                                 result[label] = []
                             contour_string = ""
-
-                            contour_clean = [contours[_c] for _c in range(0, len(contours), int(len(contours)/20))]
+                            step_size = max(1, int(len(contours)/40))
+                            contour_clean = [contours[_c] for _c in range(0, len(contours), step_size)]
                             print(contour_clean)
 
                             for point in contour_clean:
@@ -355,8 +357,10 @@ def create(request, tid):
                 "bottle":2,
                 "can":3,
                 "gum":4,
+                "boxes":5,
+                "plastic_bags":6
                 }
-        tf_annotation_labels = {"object":1}
+#        tf_annotation_labels = {"object":1}
 
 
 
