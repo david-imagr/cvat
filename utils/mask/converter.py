@@ -105,10 +105,11 @@ def main():
     background = to_scalar(args.background_color, dim)
 
     for image in tqdm(anno, desc='Generate masks'):
-        mask_path = os.path.join(args.output_dir, os.path.splitext(image['name'])[0] + '.png')
+        mask_path = os.path.join(args.output_dir, os.path.basename(os.path.splitext(image['name'])[0] + '.png'))
         mask_dir = os.path.dirname(mask_path)
         if mask_dir:
             os.makedirs(mask_dir, exist_ok=True)
+        print('mask_path', mask_path, image['name'])
         create_mask_file(mask_path, int(image['width']), int(image['height']),
             args.mask_bitness, color_map, background, image['shapes'])
 

@@ -1,0 +1,18 @@
+version: "2.3"
+
+services:
+  cvat:
+    environment:
+      ALLOWED_HOSTS: '*'
+      CVAT_SHARE_UTL: "Mounted from /mnt/share host dir"
+    ports:
+      - "80:8080"
+    volumes:
+      - cvat_share:/home/django/share:ro
+
+volumes:
+  cvat_share:
+    driver_opts:
+      type: none
+      device: /home/david_yu_imagr_co
+      o: bind
