@@ -14,7 +14,6 @@
 
 
 # Ignore temporary files
-docker-compose.override.yml
 /.vscode
 __pycache__
 *.pyc
