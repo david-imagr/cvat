@@ -71,7 +71,9 @@ RUN if [ "$CUDA_SUPPORT" = "yes" ]; then \
 # Tensorflow annotation support
 ARG TF_ANNOTATION
 
-#COPY models /tmp/models
+COPY models/cvat_models /tmp/models
+RUN echo '-----------------------------'
+RUN echo "$(ls /tmp/models )"
 ENV TF_ANNOTATION=${TF_ANNOTATION}
 ENV TF_ANNOTATION_MODEL_PATH=${HOME}/rcnn/inference_graph
 RUN if [ "$TF_ANNOTATION" = "yes" ]; then \

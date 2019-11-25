@@ -14,5 +14,5 @@ volumes:
   cvat_share:
     driver_opts:
       type: none
-      device: /home/david_yu_imagr_co
+      device: /mnt/cvat-data
       o: bind

@@ -14,8 +14,8 @@ cd ${HOME} && \
 # This is for class agnostic platform
 #imagr_model='/tmp/models/mask_rcnn_platform_resnet50_atrous_PMS_first_stage_max_proposal_100'
 #imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_class_agnostic'
-imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_33x33_6_groups_PMS_pre_demo'
-mv ${imagr_model} ${HOME}/rcnn && cd ${HOME} && \
+imagr_model='mrcnn_platform'
+mv /tmp/models/${imagr_model} ${HOME}/rcnn && cd ${HOME} && \
 mv rcnn/frozen_inference_graph.pb rcnn/inference_graph.pb
 
 #pip3 install --no-cache-dir tensorflow-gpu==1.12
