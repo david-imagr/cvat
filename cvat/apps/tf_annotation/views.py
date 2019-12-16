@@ -28,7 +28,8 @@ import random
 
 def load_image_into_numpy(image):
     (im_width, im_height) = image.size
-    return np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
+    #return np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
+    return np.asarray(image)
 
 
 def run_inference_engine_annotation(image_list, labels_mapping, treshold):
@@ -104,8 +105,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
         bb_width = box[2]-box[0]
         bb_height = box[3]-box[1]
         mask_resized = cv2.resize(mask, (bb_width, bb_height))
-        mask_resized = cv2.blur(mask_resized,(15,15))
-        mask_resized[mask_resized>0.65] = 1
+        mask_resized = cv2.blur(mask_resized,(10,10))
+        mask_resized[mask_resized>0.5] = 1
 
         mask_temp[ymin:ymax, xmin:xmax] = mask_resized
         #cv2.normalize(mask_temp,mask_temp,0,255,cv2.NORM_MINMAX)
@@ -169,7 +170,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
 
                 slogger.glob.info("score {}".format(scores))
 
-                n_points = 40
+                n_points = 100
 
                 for i in range(len(classes[0])):
                     if classes[0][i] in labels_mapping.keys():
@@ -180,9 +181,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                             if label not in result:
                                 result[label] = []
                             contour_string = ""
-                            step_size = max(1, int(len(contours)/40))
+                            step_size = max(1, int(len(contours)/float(n_points)))
                             contour_clean = [contours[_c] for _c in range(0, len(contours), step_size)]
-                            print(contour_clean)
 
                             for point in contour_clean:
 
