@@ -3,5 +3,5 @@
 
 #spice @select=type:spice can @select=type:can bottle @select=type:bottle hand @select=type:hand
 
-sudo docker-compose -f docker-compose.yml  -f docker-compose.override.yml -f components/cuda/docker-compose.cuda.yml -f components/tf_annotation/docker-compose.tf_annotation.yml up -d 
+sudo docker-compose -f docker-compose.yml  -f docker-compose.override.yml -f components/cuda/docker-compose.cuda.yml -f components/tf_annotation/docker-compose.tf_annotation.yml up --build
 
