@@ -85,7 +85,9 @@ def create_mask_file(mask_path, width, height, bitness, color_map, background, s
         points = np.array([(int(p[0]), int(p[1])) for p in points])
 
         mask = cv2.fillPoly(mask, [points], color=color)
-    cv2.imwrite(mask_path, mask)
+    success = cv2.imwrite(mask_path, mask)
+    if success is False:
+        print('Failed to write to {}'.format(mask_path))
 
 def to_scalar(str, dim):
     scalar = list(map(int, str.split(',')))
@@ -107,10 +109,10 @@ def main():
     for image in tqdm(anno, desc='Generate masks'):
         mask_path = os.path.join(args.output_dir, os.path.basename(os.path.splitext(image['name'])[0] + '.png'))
         mask_dir = os.path.dirname(mask_path)
-        if mask_dir:
-            os.makedirs(mask_dir, exist_ok=True)
+        if os.path.exists(mask_dir) is False:
+            os.makedirs(mask_dir)
         print('mask_path', mask_path, image['name'])
-        create_mask_file(mask_path, int(image['width']), int(image['height']),
+        create_mask_file(os.path.join(args.output_dir,os.path.basename(mask_path)), int(image['width']), int(image['height']),
             args.mask_bitness, color_map, background, image['shapes'])
 
 
