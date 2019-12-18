@@ -111,7 +111,6 @@ def main():
         mask_dir = os.path.dirname(mask_path)
         if os.path.exists(mask_dir) is False:
             os.makedirs(mask_dir)
-        print('mask_path', mask_path, image['name'])
         create_mask_file(os.path.join(args.output_dir,os.path.basename(mask_path)), int(image['width']), int(image['height']),
             args.mask_bitness, color_map, background, image['shapes'])
 

@@ -191,9 +191,13 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                             array_output = [image_num, contour_string]
 
                             slogger.glob.info("Output array : {}".format(array_output))
-
-                            #result[label].append([image_num, xmin, ymin, xmax, ymax])
-                            result[label].append(array_output)
+                            
+                            # TODO : add variable to determine if box or polygon
+                            use_polygon = False
+                            if use_polygon is False:
+                                result[label].append([image_num, xmin, ymin, xmax, ymax])
+                            else:
+                                result[label].append(array_output)
         finally:
             sess.close()
             del sess
@@ -234,31 +238,36 @@ def convert_to_cvat_format(data):
 
     for label in data:
         boxes = data[label]
-        #for box in boxes:
-        #    result['create']['boxes'].append({
-        #        "label_id": label,
-        #        "frame": box[0],
-        #        "xtl": box[1],
-        #        "ytl": box[2],
-        #        "xbr": box[3],
-        #        "ybr": box[4],
-        #        "z_order": 0,
-        #        "group_id": 0,
-        #        "occluded": False,
-        #        "attributes": [],
-        #        "id": -1,
-        #    })
-        for box in boxes:
-            result['create']['polygons'].append({
-                "label_id": label,
-                "frame": box[0],
-                "points": box[1],
-                "z_order": 0,
-                "group_id": 0,
-                "occluded": False,
-                "attributes": [],
-                "id": -1,
-            })
+
+        # TODO Add args
+        use_polygon = False
+        if use_polygon is False:
+            for box in boxes:
+                result['create']['boxes'].append({
+                    "label_id": label,
+                    "frame": box[0],
+                    "xtl": box[1],
+                    "ytl": box[2],
+                    "xbr": box[3],
+                    "ybr": box[4],
+                    "z_order": 0,
+                    "group_id": 0,
+                    "occluded": False,
+                    "attributes": [],
+                    "id": -1,
+                })
+        else:
+            for box in boxes:
+                result['create']['boxes'].append({
+                    "label_id": label,
+                    "frame": box[0],
+                    "points": box[1],
+                    "z_order": 0,
+                    "group_id": 0,
+                    "occluded": False,
+                    "attributes": [],
+                    "id": -1,
+                })
 
 
     return result
