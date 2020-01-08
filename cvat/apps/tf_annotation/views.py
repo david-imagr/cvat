@@ -159,14 +159,23 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 image_np = load_image_into_numpy(image)
                 image_np_expanded = np.expand_dims(image_np, axis=0)
 
+                # TODO : add variable to determine if box or polygon
+                use_polygon = False
+
+
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
                 scores = detection_graph.get_tensor_by_name('detection_scores:0')
-
                 classes = detection_graph.get_tensor_by_name('detection_classes:0')
                 num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                masks = detection_graph.get_tensor_by_name('detection_masks:0')
-                (boxes, scores, classes, masks, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
+
+                if use_polygon == True:
+                    masks = detection_graph.get_tensor_by_name('detection_masks:0')
+                    (boxes, scores, classes, masks, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
+                else:
+                    (boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
+
+
 
                 slogger.glob.info("score {}".format(scores))
 
@@ -176,24 +185,25 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                     if classes[0][i] in labels_mapping.keys():
                         if scores[0][i] >= treshold:
                             xmin, ymin, xmax, ymax = _normalize_box(boxes[0][i], width, height)
-                            contours = _convert_mask_to_polygon(image_original_np, masks[0][i], [xmin,ymin,xmax,ymax])
                             label = labels_mapping[classes[0][i]]
-                            if label not in result:
-                                result[label] = []
-                            contour_string = ""
-                            step_size = max(1, int(len(contours)/float(n_points)))
-                            contour_clean = [contours[_c] for _c in range(0, len(contours), step_size)]
 
-                            for point in contour_clean:
+                            if use_polygon == True:
+                                contours = _convert_mask_to_polygon(image_original_np, masks[0][i], [xmin,ymin,xmax,ymax])
+                                if label not in result:
+                                    result[label] = []
+                                contour_string = ""
+                                step_size = max(1, int(len(contours)/float(n_points)))
+                                contour_clean = [contours[_c] for _c in range(0, len(contours), step_size)]
 
-                                contour_string += "{},{} ".format(int(point[0]), int(point[1]))
+                                for point in contour_clean:
 
-                            array_output = [image_num, contour_string]
+                                    contour_string += "{},{} ".format(int(point[0]), int(point[1]))
 
-                            slogger.glob.info("Output array : {}".format(array_output))
+                                array_output = [image_num, contour_string]
+
+                                slogger.glob.info("Output array : {}".format(array_output))
                             
-                            # TODO : add variable to determine if box or polygon
-                            use_polygon = False
+                            
                             if use_polygon is False:
                                 result[label].append([image_num, xmin, ymin, xmax, ymax])
                             else:
