@@ -173,7 +173,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                     masks = detection_graph.get_tensor_by_name('detection_masks:0')
                     (boxes, scores, classes, masks, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
                 else:
-                    (boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, masks, num_detections], feed_dict={image_tensor: image_np_expanded})
+                    (boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, num_detections], feed_dict={image_tensor: image_np_expanded})
 
 
 
@@ -186,6 +186,8 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                         if scores[0][i] >= treshold:
                             xmin, ymin, xmax, ymax = _normalize_box(boxes[0][i], width, height)
                             label = labels_mapping[classes[0][i]]
+                            if label not in result:
+                                result[label] = []
 
                             if use_polygon == True:
                                 contours = _convert_mask_to_polygon(image_original_np, masks[0][i], [xmin,ymin,xmax,ymax])
@@ -205,6 +207,9 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                             
                             
                             if use_polygon is False:
+                                slogger.glob.info("output {} ".format([image_num, xmin, ymin, xmax, ymax]))
+                                slogger.glob.info("label {}".format(label))
+                                slogger.glob.info("results key {}".format(result.keys()))
                                 result[label].append([image_num, xmin, ymin, xmax, ymax])
                             else:
                                 result[label].append(array_output)
@@ -284,7 +289,7 @@ def convert_to_cvat_format(data):
 
 def create_thread(tid, labels_mapping):
     try:
-        TRESHOLD = 0.85
+        TRESHOLD = 0.55
         # Init rq job
         job = rq.get_current_job()
         job.meta['progress'] = 0
