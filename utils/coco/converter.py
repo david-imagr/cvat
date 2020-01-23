@@ -347,6 +347,7 @@ def insert_annotation_data(image, category_map, segm_id, object, img_dims, resul
     result_annotation['annotations'].append(new_anno)
 
 
+
 def main():
     args = parse_args()
     xml_file_name = args.cvat_xml
@@ -422,6 +423,7 @@ def main():
     # Save created annotation
     log.info('Saving annotation...')
     with open(output_file_name, 'w') as outfile:
+        print(result_annotation)
         json.dump(result_annotation, outfile)
     log.info('Annotation was saved in <{}> successfully'.format(output_file_name))
 

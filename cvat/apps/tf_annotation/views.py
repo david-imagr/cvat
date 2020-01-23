@@ -93,6 +93,7 @@ def run_inference_engine_annotation(image_list, labels_mapping, treshold):
 
 def run_tensorflow_annotation(image_list, labels_mapping, treshold):
     def _normalize_box(box, w, h):
+        slogger.glob.info("BUG BOX : {}".format(box))
         xmin = int(box[1] * w)
         ymin = int(box[0] * h)
         xmax = int(box[3] * w)
@@ -160,7 +161,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 image_np_expanded = np.expand_dims(image_np, axis=0)
 
                 # TODO : add variable to determine if box or polygon
-                use_polygon = False
+                use_polygon = True 
 
 
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
@@ -184,6 +185,7 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                 for i in range(len(classes[0])):
                     if classes[0][i] in labels_mapping.keys():
                         if scores[0][i] >= treshold:
+                            slogger.glob.info("boxes : {}".format(boxes[0]))
                             xmin, ymin, xmax, ymax = _normalize_box(boxes[0][i], width, height)
                             label = labels_mapping[classes[0][i]]
                             if label not in result:
@@ -207,10 +209,30 @@ def run_tensorflow_annotation(image_list, labels_mapping, treshold):
                             
                             
                             if use_polygon is False:
-                                slogger.glob.info("output {} ".format([image_num, xmin, ymin, xmax, ymax]))
-                                slogger.glob.info("label {}".format(label))
-                                slogger.glob.info("results key {}".format(result.keys()))
-                                result[label].append([image_num, xmin, ymin, xmax, ymax])
+                                #slogger.glob.info("output {} ".format([image_num, xmin, ymin, xmax, ymax]))
+                                #slogger.glob.info("label {}".format(label))
+                                #slogger.glob.info("results key {}".format(result.keys()))
+                                #result[label].append([image_num, xmin, ymin, xmax, ymax])
+                                # Move bounding box to polygon representation
+                                boxes_out = [
+                                        (xmin, ymin),
+                                        (xmax, ymin),
+                                        (xmax, ymax),
+                                        (xmin, ymax)
+                                        ]
+                                contour_string = ""
+
+                                for p in boxes_out:
+                                    contour_string += "{},{} ".format(int(p[0]), int(p[1]))
+
+                                array_output = [image_num, contour_string]
+                                result[label].append(array_output)
+                                slogger.glob.info("box contour : {}".format(array_output))
+
+                                
+
+
+
                             else:
                                 result[label].append(array_output)
         finally:
@@ -255,7 +277,7 @@ def convert_to_cvat_format(data):
         boxes = data[label]
 
         # TODO Add args
-        use_polygon = False
+        use_polygon = True 
         if use_polygon is False:
             for box in boxes:
                 result['create']['boxes'].append({
@@ -273,7 +295,7 @@ def convert_to_cvat_format(data):
                 })
         else:
             for box in boxes:
-                result['create']['boxes'].append({
+                result['create']['polygons'].append({
                     "label_id": label,
                     "frame": box[0],
                     "points": box[1],

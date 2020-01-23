@@ -14,7 +14,7 @@ cd ${HOME} && \
 # This is for class agnostic platform
 #imagr_model='/tmp/models/mask_rcnn_platform_resnet50_atrous_PMS_first_stage_max_proposal_100'
 #imagr_model='/tmp/models/mask_rcnn_basket_resnet50_atrous_class_agnostic'
-imagr_model='mrcnn_platform'
+imagr_model='mask_rcnn_mobilenet_v2_coco_ckpt_lr'
 mv /tmp/models/${imagr_model} ${HOME}/rcnn && cd ${HOME} && \
 mv rcnn/frozen_inference_graph.pb rcnn/inference_graph.pb
 
