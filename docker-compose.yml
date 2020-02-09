@@ -57,9 +57,8 @@ services:
       - cvat_logs:/home/django/logs
       - cvat_models:/home/django/models
       - type: bind
-        source: /home/david_yu_imagr_co
+        source: /home/david_yu_imagr_co     
         target: /home/david_yu_imagr_co
-
 volumes:
   cvat_db:
   cvat_data:
